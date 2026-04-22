@@ -1,257 +1,968 @@
-```html
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>SEL 英雄之旅地圖</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEL 英雄之旅：校園心動力</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
 
-body{
-font-family:"Microsoft JhengHei";
-background:linear-gradient(#a8e0ff,#f0f9ff);
-text-align:center;
-padding:20px;
-}
+  :root {
+    --gold: #FFD700;
+    --green: #4CAF50;
+    --blue: #2196F3;
+    --purple: #9C27B0;
+    --orange: #FF9800;
+    --red: #F44336;
+    --dark: #0a0a1a;
+    --card-bg: rgba(255,255,255,0.07);
+  }
 
-h1{
-color:#1e40af;
-}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-#map{
-position:relative;
-width:900px;
-height:450px;
-margin:auto;
-background:#d1fae5;
-border-radius:20px;
-box-shadow:0 8px 20px rgba(0,0,0,0.2);
-overflow:hidden;
-}
+  body {
+    font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+    background: #0a0a1a;
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-/* 路徑 */
+  /* ===== STARS BACKGROUND ===== */
+  #stars-bg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse at center, #1a1a3e 0%, #0a0a1a 100%);
+    overflow: hidden;
+  }
+  .star {
+    position: absolute; background: #fff; border-radius: 50%;
+    animation: twinkle var(--dur) ease-in-out infinite alternate;
+    opacity: var(--op);
+  }
+  @keyframes twinkle { from { opacity: var(--op); } to { opacity: 0.1; } }
 
-.path{
-position:absolute;
-height:6px;
-background:#64748b;
-}
+  /* ===== SCREENS ===== */
+  .screen {
+    position: relative; z-index: 1; min-height: 100vh;
+    display: none; flex-direction: column; align-items: center;
+    padding: 20px;
+  }
+  .screen.active { display: flex; }
 
-/* 關卡 */
+  /* ===== TITLE SCREEN ===== */
+  #screen-title {
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 30%, rgba(100,50,200,0.4) 0%, transparent 70%);
+  }
 
-.level{
+  .title-badge {
+    background: linear-gradient(135deg, #FFD700, #FF9800);
+    color: #000; font-size: 12px; font-weight: 900;
+    padding: 6px 18px; border-radius: 20px; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 20px;
+    animation: pulse-badge 2s ease-in-out infinite;
+  }
+  @keyframes pulse-badge {
+    0%,100% { box-shadow: 0 0 10px rgba(255,215,0,0.5); }
+    50% { box-shadow: 0 0 30px rgba(255,215,0,0.9), 0 0 60px rgba(255,150,0,0.4); }
+  }
 
-position:absolute;
-width:70px;
-height:70px;
-border-radius:50%;
-background:white;
-border:4px solid #2563eb;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:28px;
-cursor:pointer;
-transition:0.2s;
-}
+  .main-title {
+    font-size: clamp(32px, 6vw, 64px);
+    font-weight: 900;
+    text-align: center;
+    line-height: 1.2;
+    background: linear-gradient(135deg, #fff 0%, #FFD700 40%, #FF9800 70%, #E91E63 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+    animation: title-glow 3s ease-in-out infinite;
+  }
+  @keyframes title-glow {
+    0%,100% { filter: drop-shadow(0 0 10px rgba(255,215,0,0.3)); }
+    50% { filter: drop-shadow(0 0 30px rgba(255,215,0,0.8)); }
+  }
 
-.level:hover{
-transform:scale(1.1);
-}
+  .subtitle {
+    font-size: clamp(14px, 2.5vw, 20px);
+    color: rgba(255,255,255,0.7); margin-bottom: 40px; text-align: center;
+  }
 
-.locked{
-background:#94a3b8;
-border-color:#64748b;
-cursor:not-allowed;
-}
+  .hero-ring {
+    width: 180px; height: 180px; margin: 30px auto;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(100,50,255,0.3), transparent);
+    border: 3px solid rgba(255,215,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 80px;
+    animation: float 3s ease-in-out infinite, ring-spin 8s linear infinite;
+    box-shadow: 0 0 40px rgba(255,215,0,0.3), inset 0 0 40px rgba(100,50,255,0.2);
+    position: relative;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+  .hero-ring::before {
+    content: '';
+    position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: #FFD700;
+    border-right-color: #FF9800;
+    animation: ring-spin 3s linear infinite;
+  }
+  @keyframes ring-spin { to { transform: rotate(360deg); } }
 
-.star{
-position:absolute;
-top:-18px;
-font-size:20px;
-color:gold;
-display:none;
-}
+  .story-box {
+    max-width: 600px; width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 16px; padding: 24px;
+    text-align: center; margin-bottom: 40px;
+    font-size: 15px; line-height: 1.8; color: rgba(255,255,255,0.85);
+  }
 
-/* 任務視窗 */
+  .btn-start {
+    background: linear-gradient(135deg, #FFD700, #FF9800);
+    color: #000; border: none; border-radius: 50px;
+    padding: 16px 48px; font-size: 20px; font-weight: 900;
+    cursor: pointer; letter-spacing: 2px;
+    box-shadow: 0 8px 32px rgba(255,215,0,0.4);
+    transition: all 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .btn-start:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 40px rgba(255,215,0,0.6);
+  }
+  .btn-start::after {
+    content: '';
+    position: absolute; top: -50%; left: -75%;
+    width: 50%; height: 200%;
+    background: rgba(255,255,255,0.3);
+    transform: skewX(-20deg);
+    animation: shine 3s infinite;
+  }
+  @keyframes shine {
+    0% { left: -75%; }
+    50%,100% { left: 125%; }
+  }
 
-#panel{
+  /* ===== MAP SCREEN ===== */
+  #screen-map { justify-content: flex-start; padding-top: 30px; }
 
-margin-top:25px;
-background:white;
-padding:25px;
-border-radius:12px;
-width:600px;
-margin-left:auto;
-margin-right:auto;
-box-shadow:0 6px 15px rgba(0,0,0,0.15);
-display:none;
+  .map-header {
+    width: 100%; max-width: 900px; text-align: center; margin-bottom: 30px;
+  }
+  .map-title {
+    font-size: clamp(20px, 4vw, 32px); font-weight: 900;
+    background: linear-gradient(90deg, #FFD700, #FF9800);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
 
-}
+  /* XP Bar */
+  .xp-container {
+    max-width: 500px; margin: 15px auto 0;
+    background: rgba(255,255,255,0.1); border-radius: 20px;
+    height: 14px; overflow: hidden;
+    border: 1px solid rgba(255,215,0,0.3);
+  }
+  .xp-bar {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #4CAF50, #FFD700);
+    border-radius: 20px; transition: width 1s ease;
+    position: relative; overflow: hidden;
+  }
+  .xp-bar::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+  }
+  @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+  .xp-label { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 6px; letter-spacing: 1px; }
 
-button{
+  /* Level Cards Grid */
+  .levels-grid {
+    width: 100%; max-width: 960px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 20px; padding: 0 10px;
+  }
 
-padding:10px 20px;
-background:#2563eb;
-color:white;
-border:none;
-border-radius:8px;
-font-size:16px;
-margin-top:15px;
-cursor:pointer;
+  .level-card {
+    background: var(--card-bg);
+    border: 2px solid rgba(255,255,255,0.12);
+    border-radius: 20px; padding: 24px 20px;
+    cursor: pointer; transition: all 0.35s;
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+  }
+  .level-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: var(--level-color);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 30px var(--level-glow);
+  }
+  .level-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: var(--level-color);
+  }
+  .level-card.completed {
+    border-color: rgba(76,175,80,0.6);
+    background: rgba(76,175,80,0.08);
+  }
+  .level-card.locked { opacity: 0.45; cursor: not-allowed; }
+  .level-card.locked:hover { transform: none; box-shadow: none; }
 
-}
+  .level-icon { font-size: 52px; margin-bottom: 12px; }
+  .level-num {
+    font-size: 11px; letter-spacing: 2px; color: var(--level-color);
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .level-name { font-size: 17px; font-weight: 900; margin-bottom: 8px; line-height: 1.3; }
+  .level-subtitle { font-size: 12px; color: rgba(255,255,255,0.55); margin-bottom: 16px; }
 
-button:hover{
-background:#1e3a8a;
-}
+  .level-progress-bar {
+    width: 100%; height: 6px;
+    background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;
+  }
+  .level-progress-fill {
+    height: 100%; border-radius: 4px;
+    background: var(--level-color);
+    transition: width 0.8s ease;
+  }
+  .level-progress-text { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 5px; }
 
-.progress{
-width:500px;
-height:20px;
-background:#ddd;
-margin:auto;
-margin-top:20px;
-border-radius:20px;
-}
+  .completed-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: #4CAF50; color: #fff;
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 900;
+  }
 
-.bar{
-height:100%;
-width:0%;
-background:#22c55e;
-border-radius:20px;
-transition:0.5s;
-}
+  /* ACE Card (special) */
+  .ace-card {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,150,0,0.1));
+    border: 2px solid rgba(255,215,0,0.4);
+    border-radius: 20px; padding: 30px;
+    cursor: pointer; transition: all 0.35s;
+    display: flex; align-items: center; gap: 24px;
+    flex-wrap: wrap;
+  }
+  .ace-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(255,215,0,0.3);
+    border-color: rgba(255,215,0,0.8);
+  }
+  .ace-card.locked { opacity: 0.4; cursor: not-allowed; }
+  .ace-card.locked:hover { transform: none; box-shadow: none; }
+  .ace-icon-big { font-size: 60px; }
+  .ace-info { flex: 1; }
+  .ace-label {
+    font-size: 12px; letter-spacing: 3px; color: #FFD700; margin-bottom: 6px;
+  }
+  .ace-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .ace-desc { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.6; }
 
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.75); z-index: 100;
+    display: none; align-items: center; justify-content: center;
+    padding: 20px; backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #0e0e2e;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 24px; max-width: 660px; width: 100%;
+    max-height: 90vh; overflow-y: auto;
+    position: relative;
+    animation: modal-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes modal-in {
+    from { opacity: 0; transform: scale(0.8) translateY(30px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-header {
+    padding: 28px 28px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    position: sticky; top: 0; background: #0e0e2e;
+    z-index: 1; border-radius: 24px 24px 0 0;
+  }
+  .modal-level-tag {
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 8px; opacity: 0.7;
+  }
+  .modal-title { font-size: 22px; font-weight: 900; line-height: 1.3; }
+  .modal-subtitle { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 5px; }
+
+  .modal-body { padding: 24px 28px 28px; }
+
+  .modal-quote {
+    background: rgba(255,255,255,0.05);
+    border-left: 3px solid var(--accent);
+    padding: 14px 16px; border-radius: 0 10px 10px 0;
+    font-size: 14px; color: rgba(255,255,255,0.8);
+    line-height: 1.7; margin-bottom: 24px; font-style: italic;
+  }
+
+  .section-title {
+    font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1);
+  }
+
+  /* Task checkboxes */
+  .task-list { list-style: none; margin-bottom: 28px; }
+  .task-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px; border-radius: 12px; margin-bottom: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    cursor: pointer; transition: all 0.25s;
+  }
+  .task-item:hover { background: rgba(255,255,255,0.08); }
+  .task-item.done {
+    background: rgba(76,175,80,0.1); border-color: rgba(76,175,80,0.3);
+  }
+  .task-checkbox {
+    width: 24px; height: 24px; border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.3);
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; margin-top: 1px;
+  }
+  .task-item.done .task-checkbox {
+    background: #4CAF50; border-color: #4CAF50;
+  }
+  .task-check-icon { display: none; font-size: 13px; color: #fff; }
+  .task-item.done .task-check-icon { display: block; }
+  .task-text { font-size: 14px; line-height: 1.6; }
+  .task-name { font-weight: 700; margin-bottom: 3px; }
+  .task-desc { color: rgba(255,255,255,0.6); font-size: 13px; }
+
+  /* Key operation box */
+  .key-op-box {
+    background: linear-gradient(135deg, rgba(var(--accent-rgb),0.15), rgba(var(--accent-rgb),0.05));
+    border: 1px solid rgba(var(--accent-rgb),0.3);
+    border-radius: 14px; padding: 18px; margin-bottom: 24px;
+  }
+  .key-op-label { font-size: 11px; letter-spacing: 2px; color: var(--accent); margin-bottom: 8px; }
+  .key-op-text { font-size: 14px; line-height: 1.7; color: rgba(255,255,255,0.85); }
+
+  /* Reward box */
+  .reward-box {
+    background: rgba(255,215,0,0.08);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 14px; padding: 18px;
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 24px;
+  }
+  .reward-icon { font-size: 36px; flex-shrink: 0; }
+  .reward-info {}
+  .reward-label { font-size: 11px; letter-spacing: 2px; color: #FFD700; margin-bottom: 4px; }
+  .reward-text { font-size: 14px; font-weight: 700; }
+  .reward-sub { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 3px; }
+
+  /* Complete button */
+  .btn-complete {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, var(--level-btn-from), var(--level-btn-to));
+    color: #fff; border: none; border-radius: 14px;
+    font-size: 16px; font-weight: 900; cursor: pointer;
+    letter-spacing: 1px; transition: all 0.3s;
+    margin-top: 8px;
+  }
+  .btn-complete:hover { filter: brightness(1.15); transform: translateY(-2px); }
+  .btn-complete:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .modal-close {
+    position: absolute; top: 18px; right: 18px;
+    background: rgba(255,255,255,0.1); border: none;
+    color: #fff; width: 36px; height: 36px; border-radius: 50%;
+    font-size: 18px; cursor: pointer; transition: all 0.2s; z-index: 2;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.2); transform: rotate(90deg); }
+
+  /* ===== ACE MODAL ===== */
+  .ace-modal-header {
+    background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,150,0,0.1));
+    border-radius: 24px 24px 0 0;
+    padding: 32px; text-align: center;
+  }
+  .ace-modal-icon { font-size: 64px; margin-bottom: 12px; }
+  .ace-modal-title { font-size: 26px; font-weight: 900;
+    background: linear-gradient(135deg, #FFD700, #FF9800);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .ace-principles { padding: 28px; }
+  .ace-principle {
+    display: flex; align-items: flex-start; gap: 18px;
+    padding: 20px; border-radius: 16px; margin-bottom: 16px;
+    transition: transform 0.2s;
+  }
+  .ace-principle:hover { transform: translateX(6px); }
+  .ace-p-icon { font-size: 40px; flex-shrink: 0; }
+  .ace-p-letter {
+    font-size: 40px; font-weight: 900; flex-shrink: 0; width: 48px;
+    background: linear-gradient(135deg, #FFD700, #FF9800);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .ace-p-name { font-size: 16px; font-weight: 900; margin-bottom: 6px; }
+  .ace-p-zh { font-size: 13px; color: #FFD700; margin-bottom: 6px; }
+  .ace-p-desc { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.7; }
+
+  .ace-principle-a { background: rgba(255,87,34,0.1); border: 1px solid rgba(255,87,34,0.25); }
+  .ace-principle-c { background: rgba(33,150,243,0.1); border: 1px solid rgba(33,150,243,0.25); }
+  .ace-principle-e { background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.25); }
+
+  .ace-final-msg {
+    margin: 0 28px 28px;
+    background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,150,0,0.05));
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 16px; padding: 20px; text-align: center;
+    font-size: 14px; line-height: 1.8; color: rgba(255,255,255,0.85);
+  }
+
+  /* ===== CELEBRATION ===== */
+  .confetti-particle {
+    position: fixed; width: 10px; height: 10px; border-radius: 2px;
+    pointer-events: none; z-index: 200;
+    animation: confetti-fall var(--dur) ease-in forwards;
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ===== TOAST ===== */
+  #toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: linear-gradient(135deg, #4CAF50, #2196F3);
+    color: #fff; padding: 14px 28px; border-radius: 50px;
+    font-size: 15px; font-weight: 700; z-index: 300;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ===== COMPLETION SCREEN ===== */
+  #screen-complete {
+    justify-content: center; text-align: center;
+    background: radial-gradient(ellipse at center, rgba(255,215,0,0.15) 0%, transparent 70%);
+  }
+  .complete-trophy { font-size: 100px; animation: float 3s ease-in-out infinite; margin-bottom: 20px; }
+  .complete-title {
+    font-size: clamp(28px, 5vw, 48px); font-weight: 900; margin-bottom: 16px;
+    background: linear-gradient(135deg, #FFD700, #FF9800, #E91E63);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .complete-text {
+    max-width: 500px; font-size: 16px; line-height: 1.8;
+    color: rgba(255,255,255,0.8); margin-bottom: 40px;
+  }
+  .badges-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+  .badge-item {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 16px; padding: 16px 20px; text-align: center;
+    min-width: 120px;
+  }
+  .badge-emoji { font-size: 36px; display: block; margin-bottom: 8px; }
+  .badge-text { font-size: 12px; color: rgba(255,255,255,0.7); }
+  .btn-restart {
+    background: transparent; border: 2px solid rgba(255,215,0,0.5);
+    color: #FFD700; padding: 14px 40px; border-radius: 50px;
+    font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s;
+  }
+  .btn-restart:hover { background: rgba(255,215,0,0.1); border-color: #FFD700; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .levels-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .ace-card { flex-direction: column; text-align: center; }
+    .modal-header, .modal-body { padding: 20px; }
+    .ace-principle { flex-direction: column; }
+  }
 </style>
 </head>
-
 <body>
 
-<h1>🎮 SEL 英雄之旅地圖</h1>
+<div id="stars-bg"></div>
 
-<div class="progress">
-<div class="bar" id="bar"></div>
+<!-- ========== TITLE SCREEN ========== -->
+<div id="screen-title" class="screen active">
+  <div class="title-badge">🎮 互動遊戲 · 校長版</div>
+  <div class="main-title">SEL 英雄之旅</div>
+  <div class="main-title" style="font-size: clamp(24px,4vw,42px); margin-top:-10px;">校園心動力</div>
+  <div class="subtitle">辰光國小 113–116 學年度 三階段框架</div>
+
+  <div class="hero-ring">🏫</div>
+
+  <div class="story-box">
+    <p>校園不再只是傳遞知識的地方，更是連結心靈的堡壘。</p><br>
+    <p>玩家（校長與教師團隊）接到了「心動力」的召喚，準備將校園從<strong style="color:#F44336">「焦慮紅」</strong>轉化為<strong style="color:#4CAF50">「共鳴綠」</strong>。</p><br>
+    <p style="color:rgba(255,255,255,0.6)">🏆 完成四大關卡，解鎖 ACE 核心心法，成為 SEL 校園英雄！</p>
+  </div>
+
+  <button class="btn-start" onclick="startGame()">⚔️ 開始冒險</button>
 </div>
 
-<div id="map">
+<!-- ========== MAP SCREEN ========== -->
+<div id="screen-map" class="screen">
+  <div class="map-header">
+    <div class="map-title">🗺️ 英雄冒險地圖</div>
+    <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-top:6px;">完成每一關的冒險任務，推動校園 SEL 文化轉型</div>
+    <div class="xp-container" style="margin-top:16px;">
+      <div class="xp-bar" id="xp-bar"></div>
+    </div>
+    <div class="xp-label" id="xp-label">進度：0 / 4 關卡完成</div>
+  </div>
 
-<!-- 路徑 -->
-<div class="path" style="top:120px;left:120px;width:160px"></div>
-<div class="path" style="top:210px;left:280px;width:160px"></div>
-<div class="path" style="top:120px;left:440px;width:160px"></div>
-<div class="path" style="top:210px;left:600px;width:160px"></div>
+  <div class="levels-grid">
+    <!-- Level 1 -->
+    <div class="level-card" id="card-1"
+      style="--level-color:#4CAF50; --level-glow:rgba(76,175,80,0.4);"
+      onclick="openLevel(1)">
+      <div class="level-icon">🏕️</div>
+      <div class="level-num">第一關 · 113 學年度</div>
+      <div class="level-name">奠基荒野</div>
+      <div class="level-subtitle">空間與工具的覺醒</div>
+      <div class="level-progress-bar">
+        <div class="level-progress-fill" id="prog-1" style="width:0%"></div>
+      </div>
+      <div class="level-progress-text" id="prog-text-1">0 / 3 任務</div>
+    </div>
 
-<!-- 關卡 -->
+    <!-- Level 2 -->
+    <div class="level-card" id="card-2"
+      style="--level-color:#2196F3; --level-glow:rgba(33,150,243,0.4);"
+      onclick="openLevel(2)">
+      <div class="level-icon">🌳</div>
+      <div class="level-num">第二關 · 114-115 學年度</div>
+      <div class="level-name">實踐森林</div>
+      <div class="level-subtitle">律動與儀式的洗禮</div>
+      <div class="level-progress-bar">
+        <div class="level-progress-fill" id="prog-2" style="width:0%"></div>
+      </div>
+      <div class="level-progress-text" id="prog-text-2">0 / 3 任務</div>
+    </div>
 
-<div class="level" style="top:90px;left:60px" onclick="openLevel(0)">
-🏫
-<div class="star" id="s0">⭐</div>
+    <!-- Level 3 -->
+    <div class="level-card" id="card-3"
+      style="--level-color:#9C27B0; --level-glow:rgba(156,39,176,0.4);"
+      onclick="openLevel(3)">
+      <div class="level-icon">🌋</div>
+      <div class="level-num">第三關 · 核心挑戰</div>
+      <div class="level-name">衝突深淵</div>
+      <div class="level-subtitle">數據與智慧的轉化</div>
+      <div class="level-progress-bar">
+        <div class="level-progress-fill" id="prog-3" style="width:0%"></div>
+      </div>
+      <div class="level-progress-text" id="prog-text-3">0 / 3 任務</div>
+    </div>
+
+    <!-- Level 4 -->
+    <div class="level-card" id="card-4"
+      style="--level-color:#FF9800; --level-glow:rgba(255,152,0,0.4);"
+      onclick="openLevel(4)">
+      <div class="level-icon">🏙️</div>
+      <div class="level-num">第四關 · 116 學年度</div>
+      <div class="level-name">永續之城</div>
+      <div class="level-subtitle">建立共鳴生態圈</div>
+      <div class="level-progress-bar">
+        <div class="level-progress-fill" id="prog-4" style="width:0%"></div>
+      </div>
+      <div class="level-progress-text" id="prog-text-4">0 / 3 任務</div>
+    </div>
+
+    <!-- ACE Card -->
+    <div class="ace-card locked" id="ace-card" onclick="openAce()">
+      <div class="ace-icon-big">💎</div>
+      <div class="ace-info">
+        <div class="ace-label">🔒 最終解鎖 · 玩家心法</div>
+        <div class="ace-title">ACE 系統：真實・一致・證據</div>
+        <div class="ace-desc">完成四大關卡後解鎖核心心法，將辰光經驗模組化，協助他校建立永續 SEL 文化。</div>
+      </div>
+      <div style="font-size:28px; color:rgba(255,215,0,0.5)">›</div>
+    </div>
+  </div>
 </div>
 
-<div class="level locked" id="L1" style="top:180px;left:240px" onclick="openLevel(1)">
-🌱
-<div class="star" id="s1">⭐</div>
+<!-- ========== COMPLETE SCREEN ========== -->
+<div id="screen-complete" class="screen">
+  <div class="complete-trophy">🏆</div>
+  <div class="complete-title">恭喜！英雄之旅完成！</div>
+  <div class="complete-text">
+    你的校園已成為一個具備「自動調節能力」的有機體。<br>
+    辰光的 SEL 文化，將成為其他學校的燈塔。
+  </div>
+  <div class="badges-row">
+    <div class="badge-item"><span class="badge-emoji">🛡️</span><div class="badge-text">環境韌性勳章</div></div>
+    <div class="badge-item"><span class="badge-emoji">⚡</span><div class="badge-text">系統化儀式</div></div>
+    <div class="badge-item"><span class="badge-emoji">⚔️</span><div class="badge-text">專業治理神兵</div></div>
+    <div class="badge-item"><span class="badge-emoji">🌍</span><div class="badge-text">共鳴生態圈</div></div>
+    <div class="badge-item"><span class="badge-emoji">💎</span><div class="badge-text">ACE 核心心法</div></div>
+  </div>
+  <button class="btn-restart" onclick="restartGame()">🔄 再次冒險</button>
 </div>
 
-<div class="level locked" id="L2" style="top:90px;left:420px" onclick="openLevel(2)">
-🌳
-<div class="star" id="s2">⭐</div>
+<!-- ========== LEVEL MODAL ========== -->
+<div class="modal-overlay" id="level-modal" onclick="closeModal(event)">
+  <div class="modal" id="modal-content">
+    <!-- Filled by JS -->
+  </div>
 </div>
 
-<div class="level locked" id="L3" style="top:180px;left:580px" onclick="openLevel(3)">
-⚔
-<div class="star" id="s3">⭐</div>
+<!-- ========== ACE MODAL ========== -->
+<div class="modal-overlay" id="ace-modal" onclick="closeAceModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAceModal()">✕</button>
+    <div class="ace-modal-header">
+      <div class="ace-modal-icon">💎</div>
+      <div class="ace-modal-title">ACE 玩家核心心法</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.6); margin-top:8px;">將辰光經驗模組化，點亮每一所學校</div>
+    </div>
+    <div class="ace-principles">
+      <div class="ace-principle ace-principle-a">
+        <div class="ace-p-letter">A</div>
+        <div>
+          <div class="ace-p-name">Authenticity</div>
+          <div class="ace-p-zh">真實性</div>
+          <div class="ace-p-desc">領導者親自實踐，不只是口號。校長以身作則，帶領行政團隊進入夕會圍圈，用真實的情感連結，消化組織壓力，讓 SEL 從上而下真正發生。</div>
+        </div>
+      </div>
+      <div class="ace-principle ace-principle-c">
+        <div class="ace-p-letter">C</div>
+        <div>
+          <div class="ace-p-name">Consistency</div>
+          <div class="ace-p-zh">一致性</div>
+          <div class="ace-p-desc">工具、語言、儀式在全校各角落保持一致。從班級到行政，從早上 Check-in 到週四圍圈，每一個環節都說同一種「情緒語言」，讓文化自然滲透。</div>
+        </div>
+      </div>
+      <div class="ace-principle ace-principle-e">
+        <div class="ace-p-letter">E</div>
+        <div>
+          <div class="ace-p-name">Evidence</div>
+          <div class="ace-p-zh">證據力</div>
+          <div class="ace-p-desc">用數據說話，讓推動的成果清晰可見。GAS/HTML AI 治理儀表板、量化指標追蹤，讓每一位利害關係人都能看見 SEL 帶來的真實改變。</div>
+        </div>
+      </div>
+    </div>
+    <div class="ace-final-msg">
+      🌟 這套遊戲化的階段，讓原本生硬的行政報告變成了具備動力的冒險地圖，不僅能帶動校內團隊，更能讓其他參訪學校一眼看見成功的路徑。
+    </div>
+  </div>
 </div>
 
-<div class="level locked" id="L4" style="top:90px;left:760px" onclick="openLevel(4)">
-🏙
-<div class="star" id="s4">⭐</div>
-</div>
-
-</div>
-
-<div id="panel">
-
-<h2 id="title"></h2>
-
-<p id="text"></p>
-
-<button onclick="complete()">完成關卡</button>
-
-</div>
-
+<!-- ========== TOAST ========== -->
+<div id="toast">✅ 任務完成！</div>
 
 <script>
+// ===== STARS =====
+(function(){
+  const bg = document.getElementById('stars-bg');
+  for(let i=0;i<120;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    const sz=Math.random()*3+1;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${Math.random()*3+2}s;--op:${Math.random()*0.7+0.1}`;
+    bg.appendChild(s);
+  }
+})();
 
-let current=0
-let playing=0
+// ===== GAME STATE =====
+const LEVELS = {
+  1: {
+    color: '#4CAF50', rgb: '76,175,80',
+    btnFrom: '#2e7d32', btnTo: '#4CAF50',
+    quote: '在荒野中插下第一支旗幟，讓情緒有家可歸。',
+    tasks: [
+      { name: '【避風港建設】冷靜角解鎖', desc: '在每個班級建立「冷靜角 (Cool-down Corner)」，讓學生擁有情緒緩衝空間。' },
+      { name: '【感官導航】情緒溫度計佈置', desc: '設置「情緒溫度計」，讓師生學會辨識心靈的紅、黃、綠燈狀態。' },
+      { name: '【裝備收集】情緒詞彙庫建立', desc: '導入「情緒卡」與「需求卡」，建立校園統一的情緒詞彙庫。' }
+    ],
+    keyOp: '透過 KIST 開學前共備，將教師轉化為「SEL 領航員」，讓全校在新學年前完成意識覺醒。',
+    rewardIcon: '🛡️', rewardName: '環境韌性勳章',
+    rewardDesc: '校園穩定度提升 20%，師生情緒安全感大幅增強。'
+  },
+  2: {
+    color: '#2196F3', rgb: '33,150,243',
+    btnFrom: '#1565C0', btnTo: '#2196F3',
+    quote: '將 SEL 融入每一天的呼吸，讓圍圈成為校園的脈搏。',
+    tasks: [
+      { name: '【圍圈魔法】全校圍圈實施', desc: '每週四全校圍圈與行政夕會圍圈，實踐 Status Before Content（狀態先於內容）。' },
+      { name: '【晨間連結】Check-in/out 儀式', desc: '每日 Check-in/out 晨間儀式，練習自我覺察，建立安全的情感表達空間。' },
+      { name: '【雙語附魔】雙語 SEL 啟動', desc: '啟動雙語 SEL 課程，用英語金句賦予情感表達全新的深度與趣味。' }
+    ],
+    keyOp: '將 SEL 嵌入各學科教案，讓學習與情感同步發生，使教師從執行者轉化為 SEL 設計師。',
+    rewardIcon: '⚡', rewardName: '系統化儀式解鎖',
+    rewardDesc: '師生連結度大幅上升，校園心理安全感建立完成。'
+  },
+  3: {
+    color: '#9C27B0', rgb: '156,39,176',
+    btnFrom: '#6A1B9A', btnTo: '#9C27B0',
+    quote: '直面情緒怪獸，用數據導航，用連結轉化。',
+    tasks: [
+      { name: '【怪獸轉化】去激化秘技施展', desc: '面對衝突個案，施展 De-escalation 技術，運用「三個感謝」化解對立情緒。' },
+      { name: '【數據雷達】AI 治理儀表板啟動', desc: '啟動 GAS/HTML AI 治理儀表板（G5 專案），從數據中預判情緒風暴，精準介入。' },
+      { name: '【深度修復】情緒故事引導修復', desc: '透過情緒故事引導，修復破碎的關係，將衝突轉化為成長的學習資產。' }
+    ],
+    keyOp: '校長以身作則，帶領行政團隊進入夕會圍圈，消化組織壓力，示範脆弱即力量。',
+    rewardIcon: '⚔️', rewardName: '專業治理神兵',
+    rewardDesc: '擁有精準介入與修復關係的能力，成為情緒風暴的平靜之眼。'
+  },
+  4: {
+    color: '#FF9800', rgb: '255,152,0',
+    btnFrom: '#E65100', btnTo: '#FF9800',
+    quote: '跨越校園圍牆，建立一個永續循環的心理安全區。',
+    tasks: [
+      { name: '【領域擴張】家長加入英雄戰隊', desc: '引導家長加入 SEL 推動行列，建立家校統一的情感語言與教養方式。' },
+      { name: '【慶典儀式】百年校慶 SEL 融入', desc: '將 SEL 融入百年校慶、節慶變裝健走等活動，展現校園的活力與韌性。' },
+      { name: '【文化永續】ACE 模組化推廣', desc: '應用 ACE 系統將辰光經驗模組化，建立可複製的框架，協助他校進行文化轉型。' }
+    ],
+    keyOp: '推廣「超慢跑」與身心平衡生活哲學，確保教育者的能量不枯竭，永續推動 SEL 文化。',
+    rewardIcon: '🌍', rewardName: '共鳴生態圈建立',
+    rewardDesc: '校園成為具備自動調節能力的有機體，成為台灣 SEL 的示範燈塔。'
+  }
+};
 
-const levels=[
+const state = {
+  tasks: { 1:[false,false,false], 2:[false,false,false], 3:[false,false,false], 4:[false,false,false] },
+  completed: { 1:false, 2:false, 3:false, 4:false }
+};
 
-{
-title:"序章：召喚與覺醒",
-text:"校園需要新的心動力。你準備帶領教師團隊開始 SEL 旅程。"
-},
+let currentLevel = null;
 
-{
-title:"第一關：奠基荒野",
-text:"建立 Cool-down Corner、情緒溫度計、情緒卡。"
-},
-
-{
-title:"第二關：實踐森林",
-text:"建立圍圈文化、Check-in/out、雙語 SEL。"
-},
-
-{
-title:"第三關：衝突深淵",
-text:"三個感謝去激化、SEL數據儀表板、衝突修復。"
-},
-
-{
-title:"最終關：永續之城",
-text:"建立家校 SEL 生態圈與 ACE 系統。"
+function startGame() {
+  document.getElementById('screen-title').classList.remove('active');
+  document.getElementById('screen-map').classList.add('active');
 }
 
-]
-
-function openLevel(i){
-
-if(i>current)return
-
-playing=i
-
-document.getElementById("panel").style.display="block"
-document.getElementById("title").innerText=levels[i].title
-document.getElementById("text").innerText=levels[i].text
-
+function restartGame() {
+  // Reset state
+  for(let l=1;l<=4;l++){
+    state.tasks[l]=[false,false,false];
+    state.completed[l]=false;
+  }
+  document.getElementById('screen-complete').classList.remove('active');
+  document.getElementById('screen-map').classList.add('active');
+  updateMap();
 }
 
-function complete(){
+function updateMap() {
+  let completedCount = 0;
+  for(let l=1;l<=4;l++){
+    const done = state.tasks[l].filter(Boolean).length;
+    const total = 3;
+    const pct = (done/total)*100;
 
-document.getElementById("s"+playing).style.display="block"
+    document.getElementById('prog-'+l).style.width = pct+'%';
+    document.getElementById('prog-text-'+l).textContent = done+' / '+total+' 任務';
 
-current++
+    const card = document.getElementById('card-'+l);
+    if(state.completed[l]){
+      completedCount++;
+      card.classList.add('completed');
+      if(!card.querySelector('.completed-badge')){
+        const b=document.createElement('div');
+        b.className='completed-badge';
+        b.textContent='✓';
+        card.appendChild(b);
+      }
+    }
+  }
 
-let progress=(current/5)*100
-document.getElementById("bar").style.width=progress+"%"
+  const pct = (completedCount/4)*100;
+  document.getElementById('xp-bar').style.width = pct+'%';
+  document.getElementById('xp-label').textContent = '進度：'+completedCount+' / 4 關卡完成';
 
-let next=document.getElementById("L"+current)
-
-if(next) next.classList.remove("locked")
-
-if(current==5){
-
-document.getElementById("title").innerText="🎉 SEL文化建立完成"
-document.getElementById("text").innerText="你的校園已經建立完整的SEL生態系統。"
-
+  const aceCard = document.getElementById('ace-card');
+  if(completedCount === 4){
+    aceCard.classList.remove('locked');
+    aceCard.querySelector('.ace-label').textContent = '🏆 已解鎖 · 玩家心法';
+  }
 }
 
+function openLevel(num) {
+  currentLevel = num;
+  const lv = LEVELS[num];
+  const tasksDone = state.tasks[num].filter(Boolean).length;
+
+  const modal = document.getElementById('modal-content');
+  modal.style.setProperty('--accent', lv.color);
+  modal.style.setProperty('--accent-rgb', lv.rgb);
+  modal.style.setProperty('--level-btn-from', lv.btnFrom);
+  modal.style.setProperty('--level-btn-to', lv.btnTo);
+
+  const taskItems = lv.tasks.map((t,i) => `
+    <li class="task-item ${state.tasks[num][i]?'done':''}" onclick="toggleTask(${num},${i})">
+      <div class="task-checkbox">
+        <span class="task-check-icon">✓</span>
+      </div>
+      <div class="task-text">
+        <div class="task-name">${t.name}</div>
+        <div class="task-desc">${t.desc}</div>
+      </div>
+    </li>
+  `).join('');
+
+  const allDone = state.tasks[num].every(Boolean);
+
+  modal.innerHTML = `
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-header">
+      <div class="modal-level-tag" style="color:${lv.color}">第 ${num} 關 · ${['113學年度','114-115學年度','核心挑戰環節','116學年度'][num-1]}</div>
+      <div class="modal-title">${['奠基荒野 — 空間與工具的覺醒','實踐森林 — 律動與儀式的洗禮','衝突深淵 — 數據與智慧的轉化','永續之城 — 建立共鳴生態圈'][num-1]}</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-quote" style="border-left-color:${lv.color}">💬 「${lv.quote}」</div>
+
+      <div class="section-title" style="color:${lv.color}">⚔️ 冒險任務</div>
+      <ul class="task-list" id="task-list-${num}">${taskItems}</ul>
+
+      <div class="section-title" style="color:${lv.color}">🔑 關鍵操作</div>
+      <div class="key-op-box" style="--accent:${lv.color}; --accent-rgb:${lv.rgb}">
+        <div class="key-op-label">CRITICAL OPERATION</div>
+        <div class="key-op-text">${lv.keyOp}</div>
+      </div>
+
+      <div class="section-title" style="color:${lv.color}">🏆 過關獎勵</div>
+      <div class="reward-box">
+        <div class="reward-icon">${lv.rewardIcon}</div>
+        <div class="reward-info">
+          <div class="reward-label">REWARD UNLOCKED</div>
+          <div class="reward-text">${lv.rewardName}</div>
+          <div class="reward-sub">${lv.rewardDesc}</div>
+        </div>
+      </div>
+
+      <button class="btn-complete"
+        id="btn-complete-${num}"
+        ${allDone?'':'disabled'}
+        onclick="completeLevel(${num})">
+        ${state.completed[num] ? '✅ 已完成此關' : allDone ? '🎉 完成關卡！領取獎勵' : '完成所有任務以過關 ('+tasksDone+'/3)'}
+      </button>
+    </div>
+  `;
+
+  document.getElementById('level-modal').classList.add('open');
 }
 
+function toggleTask(level, idx) {
+  state.tasks[level][idx] = !state.tasks[level][idx];
+
+  // Update task item
+  const list = document.getElementById('task-list-'+level);
+  const items = list.querySelectorAll('.task-item');
+  items[idx].classList.toggle('done', state.tasks[level][idx]);
+
+  const done = state.tasks[level].filter(Boolean).length;
+  const allDone = done === 3;
+
+  // Update button
+  const btn = document.getElementById('btn-complete-'+level);
+  btn.disabled = !allDone;
+  btn.textContent = allDone ? '🎉 完成關卡！領取獎勵' : '完成所有任務以過關 ('+done+'/3)';
+
+  // Update map
+  updateMap();
+
+  if(state.tasks[level][idx]){
+    showToast('✅ 任務解鎖！繼續加油！');
+  }
+}
+
+function completeLevel(num) {
+  if(!state.tasks[num].every(Boolean)) return;
+  if(state.completed[num]) return;
+
+  state.completed[num] = true;
+
+  const btn = document.getElementById('btn-complete-'+num);
+  btn.textContent = '✅ 已完成此關';
+  btn.disabled = true;
+
+  updateMap();
+  closeModal();
+  launchConfetti();
+  showToast('🏆 關卡完成！獲得 ' + LEVELS[num].rewardName);
+
+  // Check if all done
+  setTimeout(() => {
+    if(Object.values(state.completed).every(Boolean)){
+      setTimeout(() => {
+        document.getElementById('screen-map').classList.remove('active');
+        document.getElementById('screen-complete').classList.add('active');
+        launchConfetti();
+      }, 1500);
+    }
+  }, 800);
+}
+
+function closeModal(event) {
+  if(event && event.target !== document.getElementById('level-modal')) return;
+  document.getElementById('level-modal').classList.remove('open');
+}
+
+function openAce() {
+  const allDone = Object.values(state.completed).every(Boolean);
+  if(!allDone) {
+    showToast('🔒 請先完成四大關卡！');
+    return;
+  }
+  document.getElementById('ace-modal').classList.add('open');
+}
+
+function closeAceModal(event) {
+  if(event && event.target !== document.getElementById('ace-modal')) return;
+  document.getElementById('ace-modal').classList.remove('open');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function launchConfetti() {
+  const colors = ['#FFD700','#FF9800','#4CAF50','#2196F3','#E91E63','#9C27B0','#fff'];
+  for(let i=0;i<60;i++){
+    setTimeout(() => {
+      const p=document.createElement('div');
+      p.className='confetti-particle';
+      p.style.cssText=`
+        left:${Math.random()*100}vw;
+        top:-10px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        --dur:${Math.random()*2+1.5}s;
+        transform:rotate(${Math.random()*360}deg);
+        opacity:1;
+      `;
+      document.body.appendChild(p);
+      setTimeout(()=>p.remove(), 3500);
+    }, i*40);
+  }
+}
+
+// Init
+updateMap();
 </script>
-
 </body>
 </html>
-```
