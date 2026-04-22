@@ -1,212 +1,257 @@
+```html
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <title>SEL 領航者：校園轉型英雄之旅</title>
-    <style>
-        :root {
-            --primary: #1e3c72;
-            --secondary: #2a5298;
-            --accent: #00b09b;
-            --danger: #ff416c;
-            --gold: #f6d365;
-            --glass: rgba(255, 255, 255, 0.95);
-        }
+<meta charset="UTF-8">
+<title>SEL 英雄之旅地圖</title>
 
-        body { 
-            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; 
-            margin: 0; background: #0f172a; 
-            display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden;
-        }
+<style>
 
-        #app-window {
-            width: 1024px; height: 720px;
-            background: #fff; border-radius: 30px;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.5);
-            display: flex; flex-direction: column; position: relative; overflow: hidden;
-        }
+body{
+font-family:"Microsoft JhengHei";
+background:linear-gradient(#a8e0ff,#f0f9ff);
+text-align:center;
+padding:20px;
+}
 
-        /* 頂部 HUD：校長管理面板 */
-        #header {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            padding: 20px 40px; color: white; display: flex; justify-content: space-between; align-items: center;
-            z-index: 100;
-        }
+h1{
+color:#1e40af;
+}
 
-        .hud-item { text-align: center; }
-        .energy-bar { width: 250px; height: 12px; background: rgba(255,255,255,0.2); border-radius: 10px; margin-top: 8px; overflow: hidden; position: relative; }
-        #energy-fill { width: 30%; height: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); transition: 1s; box-shadow: 0 0 10px #00f2fe; }
+#map{
+position:relative;
+width:900px;
+height:450px;
+margin:auto;
+background:#d1fae5;
+border-radius:20px;
+box-shadow:0 8px 20px rgba(0,0,0,0.2);
+overflow:hidden;
+}
 
-        /* 遊戲主場景 */
-        #game-world { flex-grow: 1; position: relative; background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%); transition: 1.5s; }
-        .night-mode { background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important; }
+/* 路徑 */
 
-        /* 建築插畫 */
-        #school-svg { position: absolute; bottom: 80px; right: 50px; width: 400px; transition: 1s; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1)); }
-        #ground { position: absolute; bottom: 0; width: 100%; height: 80px; background: #22c55e; border-top: 6px solid #16a34a; }
+.path{
+position:absolute;
+height:6px;
+background:#64748b;
+}
 
-        /* 角色與衝突實體 */
-        #principal { font-size: 90px; position: absolute; bottom: 70px; left: 100px; transition: 0.8s; z-index: 50; }
-        #conflict-shadow { 
-            font-size: 110px; position: absolute; bottom: 70px; right: 150px; 
-            opacity: 0; transform: scale(0.5); transition: 0.6s; z-index: 40;
-            filter: drop-shadow(0 0 20px rgba(255,65,108,0.5));
-        }
+/* 關卡 */
 
-        /* 儀表板特效 */
-        #ai-scanner {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(0, 176, 155, 0.05) 0px, rgba(0, 176, 155, 0.05) 1px, transparent 1px, transparent 20px);
-            pointer-events: none; opacity: 0; transition: 0.5s;
-        }
+.level{
 
-        /* 互動 UI */
-        #ui-tray {
-            height: 200px; background: var(--glass); backdrop-filter: blur(20px);
-            padding: 20px 50px; display: flex; gap: 40px; align-items: center; border-top: 2px solid #e2e8f0;
-        }
+position:absolute;
+width:70px;
+height:70px;
+border-radius:50%;
+background:white;
+border:4px solid #2563eb;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
+cursor:pointer;
+transition:0.2s;
+}
 
-        #message {
-            flex: 1; font-size: 20px; color: #1e293b; line-height: 1.6;
-            background: #f8fafc; padding: 20px; border-radius: 15px; border-left: 10px solid var(--primary);
-        }
+.level:hover{
+transform:scale(1.1);
+}
 
-        #btn-group { display: flex; flex-direction: column; gap: 12px; width: 280px; }
-        .game-btn {
-            padding: 16px; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer;
-            transition: 0.3s; color: white; text-align: center;
-        }
-        .primary-btn { background: var(--primary); }
-        .sel-btn { background: var(--accent); display: none; animation: pulse 2s infinite; }
-        .game-btn:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+.locked{
+background:#94a3b8;
+border-color:#64748b;
+cursor:not-allowed;
+}
 
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 176, 155, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(0, 176, 155, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 176, 155, 0); } }
+.star{
+position:absolute;
+top:-18px;
+font-size:20px;
+color:gold;
+display:none;
+}
 
-        /* 圍圈魔法陣 */
-        #magic-circle {
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%) scale(0);
-            width: 500px; height: 150px; border: 5px dashed rgba(255,255,255,0.6); border-radius: 50%; transition: 1.5s;
-        }
-        .active-circle { transform: translateX(-50%) scale(1) !important; animation: rotate 20s linear infinite; }
-        @keyframes rotate { from { transform: translateX(-50%) rotate(0deg); } to { transform: translateX(-50%) rotate(360deg); } }
-    </style>
+/* 任務視窗 */
+
+#panel{
+
+margin-top:25px;
+background:white;
+padding:25px;
+border-radius:12px;
+width:600px;
+margin-left:auto;
+margin-right:auto;
+box-shadow:0 6px 15px rgba(0,0,0,0.15);
+display:none;
+
+}
+
+button{
+
+padding:10px 20px;
+background:#2563eb;
+color:white;
+border:none;
+border-radius:8px;
+font-size:16px;
+margin-top:15px;
+cursor:pointer;
+
+}
+
+button:hover{
+background:#1e3a8a;
+}
+
+.progress{
+width:500px;
+height:20px;
+background:#ddd;
+margin:auto;
+margin-top:20px;
+border-radius:20px;
+}
+
+.bar{
+height:100%;
+width:0%;
+background:#22c55e;
+border-radius:20px;
+transition:0.5s;
+}
+
+</style>
 </head>
+
 <body>
 
-<div id="app-window">
-    <div id="header">
-        <div class="hud-item">
-            <div style="font-size: 12px; opacity: 0.7; letter-spacing: 2px;">STRATEGIC DASHBOARD</div>
-            <div style="font-size: 24px; font-weight: 800;">SEL 領航者：<span id="year-label" style="color: var(--gold);">113 學年度</span></div>
-        </div>
-        <div class="hud-item">
-            <div style="font-weight: bold; font-size: 14px;">校園心理穩定度 (Stability)</div>
-            <div class="energy-bar"><div id="energy-fill"></div></div>
-        </div>
-    </div>
+<h1>🎮 SEL 英雄之旅地圖</h1>
 
-    <div id="game-world">
-        <div id="ai-scanner"></div>
-        <div id="magic-circle"></div>
-        
-        <svg id="school-svg" viewBox="0 0 400 200">
-            <path d="M20 180 L380 180 L380 60 L200 10 L20 60 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
-            <rect x="60" y="80" width="40" height="40" fill="#e2e8f0" rx="4"/>
-            <rect x="180" y="80" width="40" height="40" fill="#e2e8f0" rx="4"/>
-            <rect x="300" y="80" width="40" height="40" fill="#e2e8f0" rx="4"/>
-            <rect x="175" y="140" width="50" height="40" fill="#334155" rx="2"/>
-        </svg>
-
-        <div id="principal">👨‍💼</div>
-        <div id="conflict-shadow">👹</div>
-        <div id="ground"></div>
-    </div>
-
-    <div id="ui-tray">
-        <div id="message">
-            校長，歡迎來到<b>「辰光 SEL 英雄之旅」</b>。目前校園正處於奠基期。<br>
-            <b>【任務】</b>請點擊下方按鈕，佈置「情緒溫度計」與「冷靜角」。
-        </div>
-        <div id="btn-group">
-            <button id="btn-main" class="game-btn primary-btn" onclick="nextStage()">執行環境奠基</button>
-            <button id="btn-sel" class="game-btn sel-btn" onclick="activateSEL()">發動「三個感謝」去激化</button>
-        </div>
-    </div>
+<div class="progress">
+<div class="bar" id="bar"></div>
 </div>
 
+<div id="map">
+
+<!-- 路徑 -->
+<div class="path" style="top:120px;left:120px;width:160px"></div>
+<div class="path" style="top:210px;left:280px;width:160px"></div>
+<div class="path" style="top:120px;left:440px;width:160px"></div>
+<div class="path" style="top:210px;left:600px;width:160px"></div>
+
+<!-- 關卡 -->
+
+<div class="level" style="top:90px;left:60px" onclick="openLevel(0)">
+🏫
+<div class="star" id="s0">⭐</div>
+</div>
+
+<div class="level locked" id="L1" style="top:180px;left:240px" onclick="openLevel(1)">
+🌱
+<div class="star" id="s1">⭐</div>
+</div>
+
+<div class="level locked" id="L2" style="top:90px;left:420px" onclick="openLevel(2)">
+🌳
+<div class="star" id="s2">⭐</div>
+</div>
+
+<div class="level locked" id="L3" style="top:180px;left:580px" onclick="openLevel(3)">
+⚔
+<div class="star" id="s3">⭐</div>
+</div>
+
+<div class="level locked" id="L4" style="top:90px;left:760px" onclick="openLevel(4)">
+🏙
+<div class="star" id="s4">⭐</div>
+</div>
+
+</div>
+
+<div id="panel">
+
+<h2 id="title"></h2>
+
+<p id="text"></p>
+
+<button onclick="complete()">完成關卡</button>
+
+</div>
+
+
 <script>
-    let stage = 0;
-    let stability = 30;
 
-    const msg = document.getElementById('message');
-    const bar = document.getElementById('energy-fill');
-    const principal = document.getElementById('principal');
-    const monster = document.getElementById('conflict-shadow');
-    const world = document.getElementById('game-world');
-    const btnMain = document.getElementById('btn-main');
-    const btnSel = document.getElementById('btn-sel');
-    const yearLabel = document.getElementById('year-label');
-    const circle = document.getElementById('magic-circle');
-    const scanner = document.getElementById('ai-scanner');
+let current=0
+let playing=0
 
-    function updateStability(v) {
-        stability += v;
-        if(stability > 100) stability = 100;
-        bar.style.width = stability + '%';
-    }
+const levels=[
 
-    function nextStage() {
-        stage++;
+{
+title:"序章：召喚與覺醒",
+text:"校園需要新的心動力。你準備帶領教師團隊開始 SEL 旅程。"
+},
 
-        if(stage === 1) {
-            msg.innerHTML = "<b>【113 奠基達成】</b>環境建置完成！<br>現在進入 <b>114 學年度：實踐森林</b>。教師已解鎖 KIST 共備技能。";
-            updateStability(20);
-            yearLabel.innerText = "114 學年度";
-            btnMain.innerText = "啟動全校實踐";
-            principal.style.left = "200px";
-        }
-        else if(stage === 2) {
-            world.classList.add('night-mode');
-            scanner.style.opacity = "1";
-            msg.innerHTML = "<b>【警報：數據異常】</b>AI 儀表板偵測到五甲班級情緒波動！<br><b>衝突發生！</b>請施展「去激化策略」轉化負能量。";
-            monster.style.opacity = "1";
-            monster.style.transform = "scale(1)";
-            btnMain.style.display = "none";
-            btnSel.style.display = "block";
-        }
-        else if(stage === 3) {
-            yearLabel.innerText = "116 學年度";
-            msg.innerHTML = "<b>【邁向永續之城】</b>SEL 已成為校園共同語言。<br>恭喜校長！家長全面加入，校園文化轉型成功。";
-            updateStability(25);
-            btnMain.innerText = "重新開始英雄之旅";
-            btnMain.onclick = () => location.reload();
-        }
-    }
+{
+title:"第一關：奠基荒野",
+text:"建立 Cool-down Corner、情緒溫度計、情緒卡。"
+},
 
-    function activateSEL() {
-        msg.innerHTML = "<b>✨ 秘技發動 ✨</b><br>1. 感謝停下來 → 2. 感謝分享 → 3. 感謝想辦法";
-        principal.innerText = "🌟";
-        
-        setTimeout(() => {
-            monster.innerText = "😊";
-            monster.style.transform = "translateY(-80px) scale(1.1)";
-            monster.style.opacity = "0.5";
-            updateStability(25);
-        }, 1200);
+{
+title:"第二關：實踐森林",
+text:"建立圍圈文化、Check-in/out、雙語 SEL。"
+},
 
-        setTimeout(() => {
-            monster.style.opacity = "0";
-            principal.innerText = "👨‍💼";
-            circle.classList.add('active-circle');
-            world.classList.remove('night-mode');
-            scanner.style.opacity = "0";
-            msg.innerHTML = "<b>轉化成功！</b>啟動「週四全校圍圈」魔法，連結大幅增強。";
-            btnSel.style.display = "none";
-            btnMain.style.display = "block";
-            btnMain.innerText = "進入永續期 (116)";
-        }, 3000);
-    }
+{
+title:"第三關：衝突深淵",
+text:"三個感謝去激化、SEL數據儀表板、衝突修復。"
+},
+
+{
+title:"最終關：永續之城",
+text:"建立家校 SEL 生態圈與 ACE 系統。"
+}
+
+]
+
+function openLevel(i){
+
+if(i>current)return
+
+playing=i
+
+document.getElementById("panel").style.display="block"
+document.getElementById("title").innerText=levels[i].title
+document.getElementById("text").innerText=levels[i].text
+
+}
+
+function complete(){
+
+document.getElementById("s"+playing).style.display="block"
+
+current++
+
+let progress=(current/5)*100
+document.getElementById("bar").style.width=progress+"%"
+
+let next=document.getElementById("L"+current)
+
+if(next) next.classList.remove("locked")
+
+if(current==5){
+
+document.getElementById("title").innerText="🎉 SEL文化建立完成"
+document.getElementById("text").innerText="你的校園已經建立完整的SEL生態系統。"
+
+}
+
+}
+
 </script>
 
 </body>
 </html>
+```
