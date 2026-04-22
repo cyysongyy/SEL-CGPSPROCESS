@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEL 英雄之旅：校園心動力 - 豪華精緻版</title>
+    <style>
+        :root {
+            --primary: #1e3c72;
+            --secondary: #2a5298;
+            --accent: #00b09b;
+            --danger: #ff416c;
+            --gold: #f6d365;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+
+        body { 
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; 
+            margin: 0; background: #0f172a; 
+            display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden;
+        }
+
+        #app-window {
+            width: 1024px; height: 680px;
+            background: #fff; border-radius: 40px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
+            border: 4px solid rgba(255,255,255,0.1);
+        }
+
+        /* 頂部科技感導航 */
+        #header {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            padding: 20px 40px; color: white; display: flex; justify-content: space-between; align-items: center;
+            z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .energy-hud { text-align: right; }
+        .bar-bg { width: 300px; height: 12px; background: rgba(255,255,255,0.2); border-radius: 10px; margin-top: 8px; position: relative; }
+        #bar-fill { width: 30%; height: 100%; background: linear-gradient(90deg, #96fbc4, #f9f586); border-radius: 10px; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 15px rgba(150,251,196,0.5); }
+
+        /* 動態遊戲場景 */
+        #game-world { flex-grow: 1; position: relative; background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%); transition: 1.5s; }
+        .night-mode { background: linear-gradient(180deg, #0f2027 0%, #203a43 50%, #2c5364 100%) !important; }
+
+        /* 景物插畫 */
+        .cloud { position: absolute; background: white; border-radius: 50px; opacity: 0.9; animation: float 30s linear infinite; filter: blur(2px); }
+        @keyframes float { from { left: -200px; } to { left: 1100px; } }
+
+        #school { position: absolute; bottom: 60px; right: 40px; width: 450px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1)); transition: 1s; }
+        #ground { position: absolute; bottom: 0; width: 100%; height: 80px; background: #55a630; border-top: 8px solid #2b9348; }
+
+        /* 角色與怪物動畫 */
+        #hero { font-size: 100px; position: absolute; bottom: 70px; left: 100px; transition: 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 50; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.1)); }
+        #monster { font-size: 120px; position: absolute; bottom: 70px; right: 120px; opacity: 0; transform: scale(0.5); transition: 0.6s; z-index: 40; }
+
+        /* 互動面板 */
+        #ui-tray {
+            height: 220px; background: var(--glass); backdrop-filter: blur(20px);
+            padding: 30px 50px; display: flex; gap: 40px; align-items: center; border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        #speech-bubble {
+            flex: 1; font-size: 22px; color: #1e293b; line-height: 1.6; font-weight: 500;
+            background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); position: relative;
+        }
+        #speech-bubble::after { content: ''; position: absolute; left: -15px; top: 50%; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-right: 15px solid white; transform: translateY(-50%); }
+
+        #btn-group { display: flex; flex-direction: column; gap: 15px; width: 320px; }
+        .action-btn {
+            padding: 20px; border: none; border-radius: 15px; font-size: 20px; font-weight: bold; cursor: pointer;
+            transition: 0.3s; box-shadow: 0 8px 0 rgba(0,0,0,0.1); text-align: center; color: white;
+        }
+        .primary-btn { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+        .sel-btn { background: linear-gradient(135deg, var(--accent), #11998e); display: none; }
+        .action-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 20px rgba(0,0,0,0.2); filter: brightness(1.1); }
+        .action-btn:active { transform: translateY(2px); box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
+
+        /* 特效：圍圈 */
+        #circle-fx {
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%) scale(0);
+            width: 500px; height: 180px; border: 6px dashed rgba(255,255,255,0.7); border-radius: 50%; transition: 1s;
+        }
+        .active-ring { transform: translateX(-50%) scale(1) !important; animation: spin 20s linear infinite; }
+        @keyframes spin { from { transform: translateX(-50%) rotate(0deg); } to { transform: translateX(-50%) rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div id="app-window">
+    <div id="header">
+        <div>
+            <div style="font-size: 14px; opacity: 0.8; letter-spacing: 2px;">CHEN GUANG ELEMENTARY</div>
+            <div style="font-size: 28px; font-weight: 800;">SEL 英雄之旅 <span id="year-label" style="color: var(--gold);">113 學年度</span></div>
+        </div>
+        <div class="energy-hud">
+            <div style="font-weight: bold;">校園心理能量傳感器</div>
+            <div class="bar-bg"><div id="bar-fill"></div></div>
+        </div>
+    </div>
+
+    <div id="game-world">
+        <div class="cloud" style="top:40px; width:150px; height:50px; animation-duration: 20s;"></div>
+        <div class="cloud" style="top:150px; width:220px; height:70px; animation-duration: 40s; left: 200px;"></div>
+        <div id="circle-fx"></div>
+        
+        <svg id="school" viewBox="0 0 400 200">
+            <rect x="50" y="50" width="300" height="150" fill="#f8fafc" rx="10"/>
+            <rect x="80" y="80" width="40" height="40" fill="#e2e8f0" rx="5"/>
+            <rect x="180" y="80" width="40" height="40" fill="#e2e8f0" rx="5"/>
+            <rect x="280" y="80" width="40" height="40" fill="#e2e8f0" rx="5"/>
+            <rect x="170" y="150" width="60" height="50" fill="#334155" rx="5"/>
+            <path d="M40 60 L200 10 L360 60 Z" fill="#1e293b"/>
+        </svg>
+
+        <div id="hero">👨‍🏫</div>
+        <div id="monster">👹</div>
+        <div id="ground"></div>
+    </div>
+
+    <div id="ui-tray">
+        <div id="speech-bubble">
+            歡迎校長！辰光國小的推動藍圖已載入。首先，讓我們進行<b>奠基任務</b>：佈置冷靜角與情緒溫度計。
+        </div>
+        <div id="btn-group">
+            <button id="btn-main" class="action-btn primary-btn" onclick="nextStep()">執行環境佈置</button>
+            <button id="btn-sel" class="action-btn sel-btn" onclick="applySEL()">✨ 發動「三個感謝」去激化</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentStep = 0;
+    let energy = 30;
+
+    const speech = document.getElementById('speech-bubble');
+    const fill = document.getElementById('bar-fill');
+    const hero = document.getElementById('hero');
+    const monster = document.getElementById('monster');
+    const world = document.getElementById('game-world');
+    const btnMain = document.getElementById('btn-main');
+    const btnSel = document.getElementById('btn-sel');
+    const yearLabel = document.getElementById('year-label');
+    const ring = document.getElementById('circle-fx');
+
+    function updateEnergy(v) {
+        energy += v;
+        if(energy > 100) energy = 100;
+        fill.style.width = energy + '%';
+    }
+
+    function nextStep() {
+        currentStep++;
+
+        if(currentStep === 1) {
+            speech.innerHTML = "<b>奠基期達成！</b>環境工具已到位。現在進入 <b>114 學年度</b>，全校實踐森林。";
+            updateEnergy(20);
+            yearLabel.innerText = "114 學年度";
+            btnMain.innerText = "啟動全校實施";
+            hero.style.left = "200px";
+        }
+        else if(currentStep === 2) {
+            world.classList.add('night-mode');
+            speech.innerHTML = "<b>【突發衝突】</b>學生情緒失控！請運用<b>「去激化策略卡」</b>轉化此負面能量。";
+            monster.style.opacity = "1";
+            monster.style.transform = "scale(1)";
+            btnMain.style.display = "none";
+            btnSel.style.display = "block";
+        }
+        else if(currentStep === 3) {
+            yearLabel.innerText = "116 學年度";
+            speech.innerHTML = "<b>邁向永續之城！</b>家長全面參與，SEL 成為校園共同語言。您已建立理想的教育生態！";
+            updateEnergy(25);
+            btnMain.innerText = "重啟英雄之旅";
+            btnMain.onclick = () => location.reload();
+        }
+    }
+
+    function applySEL() {
+        speech.innerHTML = "<b>去激化咒語發動：</b><br>1. 感謝停下來 → 2. 感謝分享 → 3. 感謝想辦法";
+        hero.innerText = "✨";
+        
+        setTimeout(() => {
+            monster.innerText = "😊";
+            monster.style.transform = "translateY(-100px) scale(1.2)";
+            monster.style.opacity = "0.5";
+            updateEnergy(25);
+        }, 1200);
+
+        setTimeout(() => {
+            monster.style.opacity = "0";
+            hero.innerText = "👨‍🏫";
+            ring.classList.add('active-ring');
+            world.classList.remove('night-mode');
+            speech.innerHTML = "<b>轉化成功！</b>啟動「圍圈魔法」，全校心理穩定度大幅提升。";
+            btnSel.style.display = "none";
+            btnMain.style.display = "block";
+            btnMain.innerText = "前往 116 永續之城";
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>
